@@ -1,7 +1,7 @@
 from cmd import Cmd
-from cipher import *
 from raildecoder import RailDecoder
 from basedecoder import BaseDecoder
+from cipher import *
 
 class CmdRunner(Cmd):
 
@@ -59,11 +59,11 @@ class CmdRunner(Cmd):
         return arg_list
 
     
-    def _inst(self) -> CipherInstance:
+    def __inst(self) -> CipherInstance:
         return self.history.curr()
 
     def _decoder(self) -> BaseDecoder:
-        return self._inst().decoder
+        return self.__inst().decoder
 
     #################
     # Cmd Functions #
@@ -76,7 +76,7 @@ class CmdRunner(Cmd):
             print("Usage: key info")
             return
         
-        if not self._inst().has_decoder():
+        if not self.__inst().has_decoder():
             print('Set the decoder type first')
             return
         
@@ -113,12 +113,12 @@ class CmdRunner(Cmd):
         args = self._parse_line_args(line)
         for arg in args:
             print('Added \'%s\'' % arg)
-            self._inst().add_input(arg)
+            self.__inst().add_input(arg)
 
     def do_type(self, line):
         args = self._parse_line_args(line)
         if len(args) == 0:
-            type_ = self._inst().get_type()
+            type_ = self.__inst().get_type()
             print('Type: ' + str(type_))
             return
         elif len(args) != 1:
@@ -127,8 +127,15 @@ class CmdRunner(Cmd):
         
         cipher_type = args[0]
         for enum_type in CipherType:
-            print(enum_type)
-        self._inst().set_type(CipherType.RAIL_FENCE)
+            print('Type: ' + str(enum_type))
+        was_set = self.__inst().set_type(CipherType.RAIL_FENCE)
+        print('Was set: ' + str(was_set))
+
+
+    def do_decode(self, line):
+        text = self.__inst().decode()
+        print(text)
+
 
     def do_test(self, line):
         obj = self.history.curr()

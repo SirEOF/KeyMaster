@@ -1,5 +1,6 @@
 from basedecoder import BaseDecoder
-from cipher import CipherType
+from cipherenum import CipherType
+from cipher import InputText
 import math
 
 class RailDecoder(BaseDecoder):
@@ -23,8 +24,8 @@ class RailDecoder(BaseDecoder):
     """
 
 
-    def __init__(self, inputs: list):
-        super().__init__(inputs)
+    def __init__(self):
+        super().__init__()
         self.add_key([('rails', self.key_rails_validate, 'Number of rails to use to decode')])
 
 
@@ -60,7 +61,8 @@ class RailDecoder(BaseDecoder):
         return rail_chars 
 
 
-    def __solve_rail_fence(rails, text, strip_spaces=True):
+    def __solve_rail_fence(rails, text: str, strip_spaces=True):
+        
         if strip_spaces:
             text = text.replace(' ', '')
         pattern = __rail_char_count(rails, len(text))
@@ -87,7 +89,7 @@ class RailDecoder(BaseDecoder):
         return final_str
 
 
-    def decode(self) -> bool:
+    def decode(self, inputText: InputText) -> bool:
         """
         Returns a True if there is suffecient information (keys)
         provided to decode the input text provided. Otherwise false
@@ -95,11 +97,14 @@ class RailDecoder(BaseDecoder):
         """
 
         if not self.can_decode():
-            return False
+            return None
 
         start_rails = None
         end_raiuls = None
         val_rails = self.get_key('rails')
+        
+        results = []
+        
         if ':' in val_rails:
             start_rails, end_rails = val_rails.split(':')
         
@@ -114,11 +119,13 @@ class RailDecoder(BaseDecoder):
             end_rails = start_rails + 1
 
         print("Decoding")
-        for input_ in inputs:
-            for rail_count in range(start_rails, end_rails + 1):
-                input_solution_set.append(self.__solve_rail_fence(input_, rail_count))
-            self.results.append(input_solution_set)
-        return True
+        for rail_count in range(start_rails, end_rails + 1):
+            text = inputText.text()
+            result = inputText.copy()
+            res_text = results.append(self.__solve_rail_fence(text, rail_count))
+            result.add_decoded_output(res_text, self)
+    
+        return results
 
     
     @staticmethod

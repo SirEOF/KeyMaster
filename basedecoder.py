@@ -1,23 +1,13 @@
-from cipher import CipherType
+from cipherenum import CipherType
 
 class BaseDecoder(object):
     
-    def __init__(self, inputs: list):
-        """
-        Args
-        -
-        """
-        self.inputs = inputs
-        self.results = None
-
+    def __init__(self):
         self.key_functs = {}
         self.key_satified = {}
         self.key_description = {}
         self.key_values = {}
 
-
-    def add_input(self, input_str: str) -> None:
-        self.inputs.append(input_str)
 
     def add_key(self, key_list: list) -> None:
         """
@@ -35,7 +25,6 @@ class BaseDecoder(object):
         """
 
         for key, funct, desc in key_list:
-            
             # Force keys to be lowercase
             key = key.lower()
             
