@@ -1,9 +1,7 @@
-from basedecoder import BaseDecoder
 from cipherenum import CipherType
-from cipher import InputText
 import math
 
-class RailDecoder(BaseDecoder):
+class RailDecoder:
     
     """
     A decoder class to decode rail ciphers (transposition ciphers)
@@ -23,23 +21,22 @@ class RailDecoder(BaseDecoder):
     chunk but isn't complete.
     """
 
-
     def __init__(self):
-        super().__init__()
-        self.add_key([('rails', self.key_rails_validate, 'Number of rails to use to decode')])
+        pass
+        # super().__init__()
 
 
-    def __rail_chunk_size(rails):
+    def __rail_chunk_size(self, rails: int) -> int:
         if rails < 3:
             raise ValueError('Must have at least 3 rails.')
 
         return (rails * 2) - 2 
 
-    def __rail_char_count(rails, str_len):
+    def __rail_char_count(self, rails: int, str_len: str) -> str:
         if rails < 3:
             raise ValueError('Must have at least 3 rails')
 
-        chunk_size = rail_chunk_size(rails)
+        chunk_size = self.__rail_chunk_size(rails)
         chunk_multiplier = [2] * rails
         chunk_multiplier[0] -= 1
         chunk_multiplier[-1] -= 1
@@ -61,11 +58,9 @@ class RailDecoder(BaseDecoder):
         return rail_chars 
 
 
-    def __solve_rail_fence(rails, text: str, strip_spaces=True):
-        
-        if strip_spaces:
-            text = text.replace(' ', '')
-        pattern = __rail_char_count(rails, len(text))
+    # Offset is not currently implemented
+    def __solve_rail_fence(self, text: str, rails: int, offset: int = 0) -> str:
+        pattern = self.__rail_char_count(rails, len(text))
 
         working_text = text
         rail_text = [None] * rails
@@ -74,7 +69,7 @@ class RailDecoder(BaseDecoder):
             working_text = working_text[pattern[rail]:]
 
         final_str = ''
-        chunk_size = rail_chunk_size(rails)
+        chunk_size = self.__rail_chunk_size(rails)
         for i in range(len(text)):
             i = i % chunk_size
             rail_index = i
@@ -89,78 +84,17 @@ class RailDecoder(BaseDecoder):
         return final_str
 
 
-    def decode(self, inputText: InputText) -> bool:
-        """
-        Returns a True if there is suffecient information (keys)
-        provided to decode the input text provided. Otherwise false
-        is returned by this function.
-        """
-
-        if not self.can_decode():
-            return None
-
-        start_rails = None
-        end_raiuls = None
-        val_rails = self.get_key('rails')
-        
-        results = []
-        
-        if ':' in val_rails:
-            start_rails, end_rails = val_rails.split(':')
-        
-            # Convert the strings to integers
-            start_rails = int(start_rails)
-            end_rails = int(end_rails)
-        else:
-            start_rails = val_rails
-            
-            # Convert the strings to integers
-            start_rails = int(start_rails)
-            end_rails = start_rails + 1
-
-        print("Decoding")
-        for rail_count in range(start_rails, end_rails + 1):
-            text = inputText.text()
-            result = inputText.copy()
-            res_text = results.append(self.__solve_rail_fence(text, rail_count))
-            result.add_decoded_output(res_text, self)
-    
-        return results
-
-    
-    @staticmethod
-    def key_rails_validate(value: str):
-        """
-        Validates that the key the user set is valid.
-        
-        Parsing or processing of the value can happen here.
-        The value returned will be stored automatically, and
-        if the value is not valid at all this function returns None.
-        """
-        
-        if value is None:
-            return None
-                
-        if '-' in value:
-            arr = value.split('-')
-            
-            if len(arr) != 2:
-                return None
-            
-            start = arr[0].strip()
-            end = arr[1].strip()
-            return start + ':' + end
-
-
-        try:
-            rail_num = int(value)
-            return rail_num
-        except ValueError:
-            # Not an int value
-            pass
-       
-        return None
+    def decode(self, rails, text):
+        return self.__solve_rail_fence(text, rails)
 
     @staticmethod
     def type():
         return CipherType.RAIL_FENCE
+
+
+# Test The Decoder
+if __name__ == "__main__":
+    obj = RailDecoder()
+    print(obj.decode(3, "WLOEAAFEFRRAFSFSBKT"))
+    print(obj.decode(3, "WLFBKTAFE O RAFSFSREA"))
+    print(obj.decode(5, "WFKA OAFFSREAFE RSLBT"))
